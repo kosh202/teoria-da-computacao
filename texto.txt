@@ -1,0 +1,24 @@
+# Automato Finito com movimentos vazios
+# Este automato detecta qualquer string contendo bb
+# L(G) = (a|b)* bb (a|b)*
+# Alfabeto:
+A a b
+# Estados:
+Q A B C D
+# Estado Inicial:
+q A
+# Estados Finais:
+F D
+# Transi¸c~oes
+T A a A
+T A b A
+T A b B
+T B ^e C
+T C b D
+T D a D
+T D ^e C
+# Palavras
+P abababbababa
+P aaabaababaa
+P abb
+P abab
