@@ -1,3 +1,5 @@
+#dupla  luiz e raphael
+
 class AutomatoFinito:
     def __init__(self):
         self.alfabeto = set()
@@ -6,6 +8,7 @@ class AutomatoFinito:
         self.estados_finais = set()
         self.transicoes = {}
         self.palavras = []
+        self.resultados = []
 
     def carregar_automato(self, arquivo):
         with open(arquivo, 'r') as file:
@@ -29,6 +32,10 @@ class AutomatoFinito:
             self.estados_finais = set(partes[1:])
         elif tipo == 'T':
             origem, simbolo, destino = partes[1:4]
+
+            # Considera "ê" como transição vazia
+            simbolo = simbolo.replace('Ãª', '', )
+
             if origem not in self.transicoes:
                 self.transicoes[origem] = {}
             if simbolo not in self.transicoes[origem]:
@@ -64,13 +71,17 @@ class AutomatoFinito:
 
     def reconhecer_palavra(self, palavra):
         estados_atuais = self.fechamento_transitivo({self.estado_inicial})
+        resultado = ""
+        #resultado = f"Reconhecendo palavra <{palavra}>:\n"
 
         for i, simbolo in enumerate(palavra):
-            print(f"\nProcessando símbolo '{simbolo}':")
-            print(f"Estados atuais: {estados_atuais}")
+            #resultado += f"\nProcessando símbolo '{simbolo}':\n"
+            #resultado += f"Estados atuais: {estados_atuais}\n"
 
             if simbolo not in self.alfabeto:
-                print(f'Erro: Símbolo "{simbolo}" não está no alfabeto.')
+                resultado += f'Erro: Símbolo "{simbolo}" não está no alfabeto.\n'
+                resultado += f"M rejeita a palavra <{palavra}>\n"
+                self.resultados.append(resultado)
                 return False
 
             novos_estados = set()
@@ -78,7 +89,7 @@ class AutomatoFinito:
             for estado_atual in estados_atuais:
                 destinos = set()
 
-                # Adiciona o movimento vazio ('') para estados que não têm transições com o símbolo específico
+                # Adiciona o movimento vazio ('') para estados atuais
                 destinos.update(self.transicoes[estado_atual].get('', set()))
 
                 if estado_atual in self.transicoes and simbolo in self.transicoes[estado_atual]:
@@ -91,18 +102,23 @@ class AutomatoFinito:
 
         # Verifique se algum estado atual é final
         if any(estado in self.estados_finais for estado in estados_atuais):
-            print(f"\nEstados finais possíveis: {estados_atuais}")
-            return True
+            #resultado += f"\nEstados finais possíveis: {estados_atuais}\n"
+            resultado += f"M aceita a palavra <{palavra}>\n"
         else:
-            print(f"\nEstados finais possíveis: {estados_atuais}")
-            return False
+            #resultado += f"\nEstados finais possíveis: {estados_atuais}\n"
+            resultado += f"M rejeita a palavra <{palavra}>\n"
+
+        self.resultados.append(resultado)
+        return True
 
     def reconhecer_palavras(self):
         for palavra in self.palavras:
-            if self.reconhecer_palavra(palavra):
-                print(f'M aceita a palavra <{palavra}>')
-            else:
-                print(f'M rejeita a palavra <{palavra}>')
+            self.reconhecer_palavra(palavra)
+
+    def salvar_resultados(self, arquivo):
+        with open(arquivo, 'w') as file:
+            for resultado in self.resultados:
+                file.write(resultado)
 
 
 def main():
@@ -119,6 +135,8 @@ def main():
 
     print("\nReconhecendo Palavras:")
     automato.reconhecer_palavras()
+
+    automato.salvar_resultados("resultados.txt")
 
 
 if __name__ == "__main__":
